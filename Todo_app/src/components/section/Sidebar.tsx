@@ -10,9 +10,10 @@ type SidebarProps = {
   counts: Record<TodoFilter, number>
   completedCount: number
   progress: number
+  onLogout?: () => void
 }
 
-export function Sidebar({ username, onUsernameChange, filter, onFilterChange, counts, completedCount, progress }: SidebarProps) {
+export function Sidebar({ username, onUsernameChange, filter, onFilterChange, counts, completedCount, progress, onLogout }: SidebarProps) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [nameDraft, setNameDraft] = useState(username)
   async function saveProfile(event: FormEvent) {
@@ -33,7 +34,7 @@ export function Sidebar({ username, onUsernameChange, filter, onFilterChange, co
       <div className="sidebar-spacer" />
       <div className="focus-card"><div className="focus-card-top"><span className="focus-icon"><Target size={16} /></span><span className="focus-percent">{progress}%</span></div><strong>Daily progress</strong><p>You’ve completed {completedCount} of {counts["All tasks"]} tasks. Keep it up!</p><div className="progress-track"><span style={{ width: `${progress}%` }} /></div></div>
       <button className="settings-link" onClick={() => { setNameDraft(username); setProfileOpen((open) => !open) }}><Settings2 size={17} /><span>Profile settings</span><ArrowUp size={14} className="settings-arrow" /></button>
-      <div className="sidebar-footer"><span className="footer-avatar">{initials}</span><div className="footer-user"><strong>{username}</strong><small>Free plan</small></div><button aria-label="Sign out" className="logout-button"><LogOut size={16} /></button></div>
+      <div className="sidebar-footer"><span className="footer-avatar">{initials}</span><div className="footer-user"><strong>{username}</strong><small>Free plan</small></div><button aria-label="Sign out" className="logout-button" onClick={onLogout}><LogOut size={16} /></button></div>
     </aside>
   )
 }
