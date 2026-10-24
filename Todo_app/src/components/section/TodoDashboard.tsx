@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react"
 import { useTodos } from "@/hooks/useTodos"
-import { createProfile, getProfile, updateProfile } from "@/lib/api"
+import { createProfile, getProfileById, updateProfile } from "@/lib/api"
 import { type TodoFilter } from "@/lib/todos"
 import { AddTodoDialog } from "@/components/section/AddTodoDialog"
 import { DashboardHeader } from "@/components/section/DashboardHeader"
@@ -9,10 +9,15 @@ import { OverviewCard } from "@/components/section/OverviewCard"
 import { Sidebar } from "@/components/section/Sidebar"
 import { TaskSection } from "@/components/section/TaskSection"
 
-export function TodoDashboard() {
+type TodoDashboardProps = {
+  onLogout?: () => void
+  initialUsername?: string
+}
+
+export function TodoDashboard({ onLogout, initialUsername = "User" }: TodoDashboardProps) {
   // ── UI-only state ──────────────────────────────────────────────────
   const [filter, setFilter] = useState<TodoFilter>("All tasks")
-  const [username, setUsername] = useState("Visal")
+  const [username, setUsername] = useState(initialUsername)
   const [profileId, setProfileId] = useState<number | null>(null)
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState("")
@@ -42,10 +47,15 @@ export function TodoDashboard() {
     let cancelled = false
     async function loadProfile() {
       try {
-        const profile = (await getProfile()) ?? (await createProfile("Visal"))
+        const savedProfileId = Number(localStorage.getItem("profile_id"))
+        const profile = savedProfileId
+          ? await getProfileById(savedProfileId)
+          : await createProfile(initialUsername)
         if (!cancelled) {
           setProfileId(profile.id)
           setUsername(profile.name)
+          localStorage.setItem("profile_id", String(profile.id))
+          localStorage.setItem("profile_name", profile.name)
         }
       } catch (error) {
         console.error("Could not load profile from backend", error)
@@ -53,7 +63,7 @@ export function TodoDashboard() {
     }
     void loadProfile()
     return () => { cancelled = true }
-  }, [])
+  }, [initialUsername])
 
   const saveProfileName = useCallback(async (name: string) => {
     const profile = profileId === null
@@ -61,6 +71,7 @@ export function TodoDashboard() {
       : await updateProfile(profileId, name)
     setProfileId(profile.id)
     setUsername(profile.name)
+    localStorage.setItem("profile_name", profile.name)
   }, [profileId])
 
   async function handleAddTodo(event: FormEvent) {
@@ -87,6 +98,7 @@ export function TodoDashboard() {
         counts={counts}
         completedCount={completedCount}
         progress={progress}
+        onLogout={onLogout}
       />
       <main className="main-content" id="home">
         <div className="page-content">

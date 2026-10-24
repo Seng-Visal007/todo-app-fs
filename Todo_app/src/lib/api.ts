@@ -213,6 +213,10 @@ export async function getProfile(): Promise<Profile | null> {
   return profiles[0] ?? null
 }
 
+export async function getProfileById(id: number): Promise<Profile> {
+  return request<Profile>(`${PROFILES_ENDPOINT}/${id}`)
+}
+
 export async function createProfile(name: string): Promise<Profile> {
   return request<Profile>(PROFILES_ENDPOINT, {
     method: "POST",
